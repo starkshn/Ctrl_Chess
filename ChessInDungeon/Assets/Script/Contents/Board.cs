@@ -2,37 +2,50 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Board
+public class Board : MonoBehaviour
 {
-    static Board s_instance = new Board();
-    public static Board Instance { get { return s_instance; } }
+    private static Board s_instance = null;
+    public static Board Instance
+    {
+        get
+        {
+            if (s_instance == null)
+            {
+                s_instance = FindObjectOfType<Board>();
+                Debug.Log("New Board!");
+            }
+            return s_instance;
+        }
+    }
 
-	public Define.TileType[,] Tile { get; private set; }
-	
-	public int Size { get; private set; }
+	UnitController _unit;
+   
+    public int Size { get; private set; }
 
-	public int DestZ { get; private set; }
-	public int DestX { get; private set; }
+    public Define.TileType[,] Tile { get;  private set; }
 
-	public void BoardInitialize(int size, int destZ, int destX, UnitController unit)
+    public void BoardInitialize(int boardSize, int targetDestZ, int targetDestX, UnitController unit)
 	{
-        Tile = new Define.TileType[size, size];
+		_unit = unit;
 
-        Size = 0;
-		DestZ = 0;
-		DestX = 0;
+        Debug.Log($" {_unit.gameObject.name}ÀÇ Å¸°Ù Z : {targetDestZ} Å¸°Ù X : {targetDestX}");
 
-		Size = size;
-		DestZ = destZ;
-		DestX = destX;
+        Size = boardSize;
 
-		//Tile[DestZ, DestX] = Define.TileType.Wall;
-		//Tile[unit.PosZ, unit.PosX] = Define.TileType.Wall;
+        if (Tile == null)
+        {
+            Tile = new Define.TileType[Size, Size];
+            Debug.Log("Create Tile!");
+        }
+        
+        SetTileData(targetDestZ, targetDestX, _unit);
+    }
 
-		//Debug.Log($"unit name : {unit.gameObject.name} board My Pos :  { Tile[unit.PosZ, unit.PosX] } TileDestPos { Tile[DestZ, DestX] }");
-	}
+    void SetTileData(int unitDestZ, int unitDestX, UnitController unit)
+    {
+        _unit = unit;
+        Tile[_unit.PosZ, _unit.PosX] = Define.TileType.InUnit;
+        Tile[unitDestZ, unitDestX] = Define.TileType.InUnit;
+    }
 
-	
-
-	
 }

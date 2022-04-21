@@ -1225,6 +1225,7 @@ GameObject:
   - component: {fileID: 2066896392038131574}
   - component: {fileID: 2066896392029128874}
   - component: {fileID: 5576516673624067409}
+  - component: {fileID: -2266573775854537075}
   m_Layer: 6
   m_Name: DogPlayer
   m_TagString: Dog
@@ -1279,6 +1280,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adc283817f5d7894990605f2f4027e49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _nextMovePos: {x: 0, y: 0, z: 0}
+  _moveSpeed: 2
+  _onField: 0
+  _onAction: 0
+--- !u!114 &-2266573775854537075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2066896392038628118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4779cc2d9da5af64a9cb9910302da669, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _onAction: 0
 --- !u!1 &2066896392038628120
 GameObject:
   m_ObjectHideFlags: 0

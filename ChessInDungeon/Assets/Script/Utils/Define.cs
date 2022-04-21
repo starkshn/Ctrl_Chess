@@ -27,7 +27,10 @@ public class Define
     {
         Empty,
         Wall,
+        InUnit,
+        TargetUnit,
     }
+    
     public enum Dir
     {
         Up = 0,

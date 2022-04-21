@@ -12,43 +12,42 @@ public struct Pos
 
 public class UnitController : MonoBehaviour
 {
-    int count;
-
+    Animator anim;
     public int PosZ { get; set; }
     public int PosX { get; set; }
 
-    public bool _onField;
-    Define.State _state = Define.State.Idle;
+    public int DestZ { get;  set; }
+    public int DestX { get;  set; }
 
+    public Vector3 _nextMovePos;
+    public float _moveSpeed = 2.0f;
+
+    public bool _onField;
     public bool _onAction;
 
+    Define.State _state = Define.State.Idle;
+
     Transform _targetTransform;
-    Vector3 _NextMovePos;
+    Vector3 _nextUnitMovePos;
 
-    Board _board;
-    UnitController _unit;
-    AStar _astar = new AStar();
-
+    UnitAction _action;
+    
     private Define.State Root()
     {
-        _targetTransform = UnitManager.Instance.TargetFinder(gameObject.GetInstanceID() );
-        Debug.Log($"{gameObject.name}Target Transform : {_targetTransform.position}");
-        
-        if (Vector3.Distance(transform.position, _targetTransform.position) <= 1.1f)
+        _targetTransform = UnitManager.Instance.TargetFinder(gameObject.GetInstanceID());
+
+        if (Vector3.Distance(transform.position, _targetTransform.position) <= 1.45f)
         {
-            
             return Attack();
         }
         else
         {
-            
             return Move();
         }
 
     }
     private Define.State Move()
     {
-       
         return Define.State.Moving;
     }
 
@@ -60,15 +59,17 @@ public class UnitController : MonoBehaviour
     void Start()
     {
         UnitManager.Instance.AddUnitInformation(gameObject.GetComponent<UnitController>());
-        _board = new Board();
+        Animator anim = GetComponent<Animator>();
+        _action = GetComponent<UnitAction>();
     }
 
     void Update()
     {
         if (UnitManager.Instance.isBattleMode)
         {
-            if (!_onAction)
+            if (!_action._onAction)
             {
+                Debug.Log("_onAction true!");
                 _state = Root();
                 switch (_state)
                 {
@@ -79,20 +80,16 @@ public class UnitController : MonoBehaviour
                         break;
                     case Define.State.Moving:
                         {
-                            // Astar돌려서 바로 다음갈 칸을 결정 하고 ->
-                            StartAstar();
-                            // 실제로 이동 시킨다.
-                            // 코루틴으로 이동시킨다.
-                            // 코루틴 시작할때 _onAction = true이다. (행동시작했으니)
-                            _onAction = true;
-
-                            transform.position = _NextMovePos;
-                            // 코루틴 끝나면 _onAction = false로.
+                            Debug.Log("Start Moving!");
+                         
+                            MoveAction();
+                            
                         }
                         break;
                     case Define.State.Attack:
                         {
-                            Debug.Log("On Attack!");
+                            Debug.Log($"{this.gameObject.name}On Attack!");
+                           
                         }
                         break;
                     default:
@@ -101,25 +98,53 @@ public class UnitController : MonoBehaviour
             }
         }
     }
-    
-    internal List<UnitManager.Pos> SetNextPath(List<UnitManager.Pos> points)
-    {
-        _NextMovePos = new Vector3(points[1].X, 0, points[1].Z); // 다음갈 위치 설정
-        Debug.Log($"{gameObject.name}'s nextMovePos {_NextMovePos}");
-        StartCoroutine(MovePath(_NextMovePos));
-        return null;
-    }
 
-    IEnumerator MovePath(Vector3 pos)
+    void MoveAction()
     {
-        yield return new WaitForSeconds(2.0f);
         
-        _onAction = false;
-    }
+        PosZ = (int)this.gameObject.transform.position.z;
+        PosX = (int)this.gameObject.transform.position.x;
+        DestZ = (int)_targetTransform.position.z;
+        DestX = (int)_targetTransform.position.x;
 
-    void StartAstar()
-    {
-        _board.BoardInitialize(6, (int)_targetTransform.position.z, (int)_targetTransform.position.x, this);
-        UnitManager.Instance.UnitInitialize( (int)gameObject.transform.position.z, (int)gameObject.transform.position.x, _board, this);
+        Board.Instance.BoardInitialize(6, DestZ, DestX, this);
+        
+        _nextUnitMovePos = UnitManager.Instance.NextPos(PosZ, PosX, DestZ, DestX);
+
+        Board.Instance.Tile[(int)_nextUnitMovePos.z, (int)_nextUnitMovePos.x] = Define.TileType.InUnit;
+        Board.Instance.Tile[PosZ, PosX] = Define.TileType.Empty;
+
+        _action.Move(_nextUnitMovePos);
+       
     }
+    //void StartAstar()
+    //{
+
+    //    PosZ = (int)this.gameObject.transform.position.z;
+    //    PosX = (int)this.gameObject.transform.position.x;
+    //    DestZ = (int)_targetTransform.position.z;
+    //    DestX = (int)_targetTransform.position.x;
+
+    //    //Board.Instance.BoardInitialize(6, DestZ, DestX, this);
+    //    UnitManager.Instance.UnitInitialize( PosZ, PosX, DestZ, DestX);
+    //}
+    //internal List<UnitManager.Pos> SetNextPath(List<UnitManager.Pos> points)
+    //{
+    //    myPoints = points;
+
+    //    _nextMovePos = new Vector3(myPoints[1].X, 0, myPoints[1].Z);
+    //    Debug.Log($"{this.gameObject.name}의 다음 벡터 : {_nextMovePos}");
+
+    //    Board.Instance.Tile[myPoints[1].Z, myPoints[1].X] = Define.TileType.InUnit;
+    //    Board.Instance.Tile[myPoints[0].Z, myPoints[0].X] = Define.TileType.Empty;
+
+    //    for (int i = 0; i < myPoints.Count; i++)
+    //        Debug.Log($"{this.gameObject.name}의 {myPoints[i].Z} {myPoints[i].X} ");
+
+    //    _nextUnitMovePos = new Vector3(myPoints[1].X, 0, myPoints[1].Z);
+
+    //    transform.position = _nextUnitMovePos;
+
+    //    return null;
+    //}
 }
